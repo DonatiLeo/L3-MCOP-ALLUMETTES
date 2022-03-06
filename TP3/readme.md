@@ -4,7 +4,7 @@ Dans ce TP vous allez apprendre à faire une `View`, et à faire une synchronisa
 
 ## Le jeu
 
-Le jeu des allumettes est simple à deux joueurs. Il y a n allumettes au départ. A tour de rôle, chaque joueur va prendre, au choix, 1, 2 ou 3 allumettes. Celui qui prend la dernière allumette perd. 
+Le jeu des allumettes est simple à deux joueurs. Il y a N allumettes au départ. A tour de rôle, chaque joueur va prendre, au choix, 1, 2 ou 3 allumettes. Celui qui prend la dernière allumette perd. 
 
 ## 1. Créer le projet
 
@@ -16,7 +16,7 @@ Créer un nouveau projet sur Android Studio.
 
 ## 2. Faire la `View` pour afficher les allumettes
 
-[Image de l'UI finale]
+![image-ui-final](tp03-ui-final.png)
 
 Il s’agit de créer une `View`, c'est à dire un élément graphique réutilisable personnalisé qui permet d’afficher les allumettes comme illustré ci-dessus. Une fois cette `View` créée, nous pourrons l'insérer dans le layout de notre `Activity` de jeu, tout comme les éléments d'interface disponibles par défaut (ex : Switch, ScrollView, etc).
 
@@ -134,14 +134,35 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
 
     * Surchargez la méthode `void onSizeChanged(int w, int h, int oldw, int oldh)` pour calculer des nouvelles dimensions pour les allumettes selon la taille de l'écran. Cela peut se faire en définissant des attributs `allumetteLargeur` et `allumetteHauteur` sur la classe `Allumettes` et en calculant ces derniers en fonction de la largeur et hauteur de l'écran (`w `et `h` ou accessibles par les méthodes `getWidth()` et `getHeight()`).
     * Le résultat :![image-ui02](tp03-ui-02.png)
-    * Ces allumettes ne sont pas très esthétiques car elles sont trop étirées (et le résultat est pire en mode portrait...). Définissez un ratio $\frac{largeur}{hauteur}$ minimal et maximal pour éviter des étirements extrêmes. Par exemple : $0.1 \leq \frac{largeur}{hauteur} \leq 0.2$. Alors, si le ratio est trop bas on diminue la hauteur, et s'il est trop élevé on diminue la largeur de l'allumette pour que le ratio soit dans les bornes.![image-ui03](tp03-ui-03.png)
+    * Ces allumettes ne sont pas très esthétiques car elles sont trop étirées (et le résultat est pire en mode portrait...). Définissez un ratio `largeur/hauteur` minimal et maximal pour éviter des étirements extrêmes. Par exemple : `0.1 <= largeur/hauteur <= 0.2`. Alors, si le ratio est trop bas on diminue la hauteur (calculer la hauteur en fonction de la largeur et du ratio minimal de 0.1), et s'il est trop élevé on diminue la largeur de l'allumette (calculer la largeur en fonction de la hauteur et du ratio maximal de 0.2).![image-ui03](tp03-ui-03.png)
     * Bonus : centrez les allumettes verticalement sur l'écran ![image-ui04](tp03-ui-04.png)
     * Bonus : ajoutez la possibilité d'avoir plusieurs lignes d'allumettes, par exemple 2 lignes.
 
 ### 2.3. Indication de l'état des allumettes (sélectionnée et enlevée)
 
 * Maintenant nous allons ajouter la possibilité d'afficher un état du jeu où un certain nombre d'allumettes (1, 2 ou 3) sont sélectionnées par un joueur.
-  * Ajoutez à la classe `Allumettes` un getter/setter afin qu'un utilisateur de cette classe puisse modifier l'attribut indiquant le nombre d'allumettes sélectionnées.
-  * Nous représenterons le fait qu'une allumette est sélectionnée en l'entourant d'un rectangle vert épais [image]
 
+  * Ajoutez à la classe `Allumettes` un getter/setter afin qu'un utilisateur de cette classe puisse modifier l'attribut indiquant le nombre d'allumettes sélectionnées.
+  * Nous représenterons le fait qu'une allumette est sélectionnée en l'entourant d'un rectangle vert épais. Ci-dessous 3 allumettes sont sélectionnées :![image-ui05](tp03-ui-05.png)
+  * Pour dessiner un rectangle vert avec un trait épais, créez un `Paint` `selectedPaint` sur lequel vous réglez
+    * la couleur : `selectedPaint.setColor(...)`
+    * l'épaisseur : `selectedPaint.setStrokeWidth(...)`
+    * le style (on veut dessiner des formes non pleines avec uniquement le trait) : `selectedPaint.setStyle(Paint.Style.STROKE)`
+
+* Enfin, on affiche les allumettes enlevées de manière différente. On va les représenter par des traits pointillés : ![image-ui-final](tp03-ui-final.png)
+
+  * Ici encore il faut que la classe `Allumettes` expose des getters et setters pour changer le nombre d'allumettes visibles.
+  * Pour dessiner des traits pointillés, on crée un `Paint` `removedPaint` sur lequel on ajoute un effet :
+
+   ```java
+   removedPaint.setPathEffect(new DashPathEffect(new float[] {25, 25}, 0));
+   ```
+
+* Testez le comportement de votre classe `Allumettes` en appelant manuellement les méthodes pour changer le nombre d'allumettes visibles et sélectionnées (par exemple depuis la méthode `onCreate` de l'activity `GameActivity`).
+
+## 3. Mise en place du jeu : le moteur de jeu, les IA et le contrôleur
+
+
+
+## 4. Interface pour un joueur humain
 
