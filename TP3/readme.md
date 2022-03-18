@@ -149,7 +149,7 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
     * l'épaisseur : `selectedPaint.setStrokeWidth(...)`
     * le style (on veut dessiner des formes non pleines avec uniquement le trait) : `selectedPaint.setStyle(Paint.Style.STROKE)`
 
-* Enfin, on affiche les allumettes enlevées de manière différente. On va les représenter par des traits pointillés : ![image-ui-final](tp03-ui-final.png)
+* Enfin, on affiche les allumettes enlevées de manière différente. On va les représenter par des traits pointillés : ![image-ui-final](tp03-ui-06.png)
 
   * Ici encore il faut que la classe `Allumettes` expose des getters et setters pour changer le nombre d'allumettes visibles.
   * Pour dessiner des traits pointillés, on crée un `Paint` `removedPaint` sur lequel on ajoute un effet :
@@ -158,9 +158,44 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
    removedPaint.setPathEffect(new DashPathEffect(new float[] {25, 25}, 0));
    ```
 
-* Testez le comportement de votre classe `Allumettes` en appelant manuellement les méthodes pour changer le nombre d'allumettes visibles et sélectionnées (par exemple depuis la méthode `onCreate` de l'activity `GameActivity`).
+* Enfin, ajoutez à la classe `Allumettes` un setter afin qu'un utilisateur de cette classe puisse modifier l'attribut indiquant le nombre d'allumettes totales du jeu (utile plus tard).
+
+* Testez le comportement de votre classe `Allumettes` en appelant manuellement les méthodes pour changer le nombre d'allumettes totales, visibles et sélectionnées (par exemple depuis la méthode `onCreate` de l'activity `GameActivity`).
+
+```java
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_game);
+  
+    gameView = findViewById(R.id.allumettes);
+  
+    // Changer le nb total d'allumettes...
+    gameView....(...);
+    // Changer le nb d'allumettes sélectionnées...
+    ...
+  }
+```
 
 ## 3. Mise en place du jeu : le moteur de jeu, les IA et le contrôleur
+
+### Mise en place du moteur de jeu
+
+* Récupérez les classes [`JeuDesAllumettes`](Joueur.java) et [`Joueur`](joueur.java) sur le repo et parcourez les.
+* Explication : ces classes de base définissent les règles du jeu et la manière dont un joueur intéragit avec le jeu :
+  * `JeuDesAllumettes` stocke l'état actuel de la partie de jeu des allumettes, et expose des méthodes pour agir sur cette partie (ajouter un joueur, faire jouer le joueur dont c'est le tour, déterminer s'il y a un gagnant, etc)
+  * `Joueur` représente un joueur et comporte un méthode `jouer` qui définit le comportement du joueur lors d'un tour. Pour le moment ce joueur de base va toujours choisir 1 allumette à son tour. Dans cette partie nous allons créer différents joueurs plus intelligents, ainsi qu'une interface pour qu'un vrai joueur puisse choisir ses coups.
+
+### Compléter l'interface graphique du jeu
+
+* On va modifier l'interface graphique du jeu (en modifiant le fichier `res/layout/activity_game.xml`). On ajoute 2 éléments pour permettre de
+  * afficher l'historique d'une partie (un `TextView` dans un `ScrollView`)
+  * lancer une partie (via un `Button`)
+* Voici un exemple d'UI, mais libre à vous de faire comme vous préférez tant que ces 2 éléments sont présents. Dans cet exemple il y a 2 `TextView` dans le `ScrollView`, un qui affiche le titre (`Historique`) et un autre dans lequel on affichera l'historique depuis la future classe `Controleur` (avec comme texte par défaut `> Début de partie`).
+
+![image-ui-final](tp03-ui-07.png)
+
+### Le contrôleur
 
 
 
