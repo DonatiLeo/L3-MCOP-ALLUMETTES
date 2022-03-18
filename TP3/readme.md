@@ -181,7 +181,7 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
 
 ### Mise en place du moteur de jeu
 
-* Récupérez les classes [`JeuDesAllumettes`](Joueur.java) et [`Joueur`](joueur.java) sur le repo et parcourez les.
+* Récupérez les classes [`JeuDesAllumettes`](Joueur.java) et [`Joueur`](Joueur.java) sur le repo et parcourez les.
 * Explication : ces classes de base définissent les règles du jeu et la manière dont un joueur intéragit avec le jeu :
   * `JeuDesAllumettes` stocke l'état actuel de la partie de jeu des allumettes, et expose des méthodes pour agir sur cette partie (ajouter un joueur, faire jouer le joueur dont c'est le tour, déterminer s'il y a un gagnant, etc)
   * `Joueur` représente un joueur et comporte un méthode `jouer` qui définit le comportement du joueur lors d'un tour. Pour le moment ce joueur de base va toujours choisir 1 allumette à son tour. Dans cette partie nous allons créer différents joueurs plus intelligents, ainsi qu'une interface pour qu'un vrai joueur puisse choisir ses coups.
