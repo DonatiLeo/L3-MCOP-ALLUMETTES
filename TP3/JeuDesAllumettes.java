@@ -134,4 +134,12 @@ public class JeuDesAllumettes {
         return null;
     }
 
+    /**
+     * Renvoie true si une partie est en cours
+     * @return
+     */
+    public boolean partieEnCours() {
+        return getGagnant() == null;
+    }
+
 }

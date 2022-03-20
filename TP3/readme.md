@@ -16,7 +16,7 @@ Créer un nouveau projet sur Android Studio.
 
 ## 2. Faire la `View` pour afficher les allumettes
 
-![image-ui-final](tp03-ui-final.png)
+![image-ui-final](tp03-ui-06.png)
 
 Il s’agit de créer une `View`, c'est à dire un élément graphique réutilisable personnalisé qui permet d’afficher les allumettes comme illustré ci-dessus. Une fois cette `View` créée, nous pourrons l'insérer dans le layout de notre `Activity` de jeu, tout comme les éléments d'interface disponibles par défaut (ex : Switch, ScrollView, etc).
 
@@ -167,7 +167,8 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_game);
-  
+    
+  	// gameView est un attribut de la classe
     gameView = findViewById(R.id.allumettes);
   
     // Changer le nb total d'allumettes...
@@ -196,6 +197,68 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
 ![image-ui-final](tp03-ui-07.png)
 
 ### Le contrôleur
+
+Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lance lorsqu'on appuie sur le bouton "Commencer" de l'application.
+
+#### a. Lancer une partie entre 2 joueurs IA
+
+* Créer une classe `Controleur` dans un package `fr.unice.l3.matchesgame.control`
+
+* Cette classe doit avoir en **attribut** une référence vers une instance `jeu` de la classe `JeuDesAllumettes`. Cette référence sera passée via le **constructeur**.
+
+* Cette classe doit avoir deux méthodes `void start()` et `void stop()` qui permettent de lancer le processus d'une partie ainsi que d'en stopper l'exécution.
+
+* Le processus gérant une partie ne peut pas se faire sur le thread principal (graphique). En effet, ce processus doit tourner *en parrallèle* du thread graphique, puisqu'il va effectuer des pauses (pour un joueur IA) ou attendre des entrées utilisateurs (pour un joueur humain), ce qui ferait "freezer" l'interface de notre application si fait sur le thread principal. Nous souhaitons également mettre à jour l'UI de temps en temps (pour indiquer un nouveau coup par exemple). Le plus simple est d'utiliser une `AsyncTask`.
+
+  * La classe `Controleur` doit avoir un attribut `partie` de type `AsyncTask`.
+
+  * Dans la méthode `start`, on initialise `partie`. Plusieurs options possibles : utiliser une classe anonyme `partie = new AsyncTask () { ... }`, ou définir une classe `class Partie extends AsyncTask`.
+
+  * Il faut surcharger la méthode `doInBackground` de `AsyncTask` pour définir ce qui se passe pendant la partie, voici une ébauche possible (incomplète). Il faut utiliser des méthodes de `jeu`.
+
+  ```java
+    @Override
+    protected Object doInBackground(Object[] objects) {
+      Log.d("Partie", "Debut de partie.");
+      try {
+        // Tant que la partie du jeu d'allumettes est en cours (pas encore de gagnant)
+        while(...) {
+          // Quel est le joueur dont c'est le tour ?
+          Joueur j = ...;
+          // Combien d'allumettes sont choisies par le joueur ?
+          int nbAllumettesChoisies = ...;
+          Log.d("Partie", "Le joueur : " + j.toString() + " choisit " + " " + nbAllumettesChoisies + " allumettes.");
+          // Marquer une pause pour laisser le temps de voir le coup
+          j.attendre();
+          int nbAllumettesVisibles = ...;
+          Log.d("Partie", "Il reste " + nbAllumettesVisibles + " allumettes.");
+        }
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    	Log.d("Partie", "Fin de partie.");
+      // Afficher le gagnant
+      Log.d("Partie", "Gagnant : " + ...);
+      
+      return null;
+    }
+  ```
+
+  * Dans la méthode `start`, on réinitialise la partie de jeu (en utilisant une méthode de `jeu`) puis on lance le processus défini juste avant : `partie.execute()`. La méthode pour arrêter ce processus est `partie.cancel(true)`, à vous de voir où il faut l'appeler.
+
+* Afin de tester le `Controleur` il faut modifier `GameActivity` pour que lors d'un clic sur le bouton `Commencer`, on puisse lancer une partie de jeu via le contrôleur (par exemple `controleur.start()`). Pour cela il faut aussi créer une instance de `JeuDesAllumettes`, lui assigner 2 joueurs, et créer une instance de `Controleur`.
+
+* Maintenant, lors d'un clic sur le bouton `Commencer`, vous devez avoir l'historique de la partie qui s'affiche dans la console. Dans les parties suivantes on va mettre à jour l'UI de l'application en fonction de ces informations sur la partie en cours.
+
+#### b. Afficher l'historique de la partie
+
+
+
+#### c. Mettre à joueur la vue du plateau de jeu
+
+
+
+### Des joueurs IA plus intéressants
 
 
 
