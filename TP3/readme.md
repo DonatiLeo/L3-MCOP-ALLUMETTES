@@ -210,15 +210,15 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
 
 * Le processus gérant une partie ne peut pas se faire sur le thread principal (graphique). En effet, ce processus doit tourner *en parrallèle* du thread graphique, puisqu'il va effectuer des pauses (pour un joueur IA) ou attendre des entrées utilisateurs (pour un joueur humain), ce qui ferait "freezer" l'interface de notre application si fait sur le thread principal. Nous souhaitons également mettre à jour l'UI de temps en temps (pour indiquer un nouveau coup par exemple). Le plus simple est d'utiliser une `AsyncTask`.
 
-  * La classe `Controleur` doit avoir un attribut `partie` de type `AsyncTask`.
+  * La classe `Controleur` doit avoir un attribut `partie` de type `AsyncTask<Void, String, String>`. (Cette `AsyncTask` ne prend pas de paramètres donc `Void`, elle renvoie comme donnée de progression des messages `String` et comme résultat final un message `String`)
 
-  * Dans la méthode `start`, on initialise `partie`. Plusieurs options possibles : utiliser une classe anonyme `partie = new AsyncTask () { ... }`, ou définir une classe `class Partie extends AsyncTask`.
+  * Dans la méthode `start`, on initialise `partie`. Plusieurs options possibles : utiliser une classe anonyme `partie = new AsyncTask<Void, String, String>() { ... }`, ou définir une classe ` Partie` qui hérite de `AsyncTask<Void, String, String>`. 
 
   * Il faut surcharger la méthode `doInBackground` de `AsyncTask` pour définir ce qui se passe pendant la partie, voici une ébauche possible (incomplète). Il faut utiliser des méthodes de `jeu`.
 
   ```java
     @Override
-    protected Object doInBackground(Object[] objects) {
+    protected String doInBackground(Void... params) {
       Log.d("Partie", "Debut de partie.");
       try {
         // Tant que la partie du jeu d'allumettes est en cours (pas encore de gagnant)
@@ -240,7 +240,7 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
       // Afficher le gagnant
       Log.d("Partie", "Gagnant : " + ...);
       
-      return null;
+      return "Le gagnant est ...";
     }
   ```
 
@@ -252,9 +252,40 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
 
 #### b. Afficher l'historique de la partie
 
+* Au lieu d'afficher les messages de progression dans la console, on souhaite mettre à jour le contenu de la `TextView` qui contient l'historique des coups de la partie sur l'UI.
 
+* Pour cela il faut que la classe `Controleur` puisse accéder à la `TextView` qui contient l'historique.
 
-#### c. Mettre à joueur la vue du plateau de jeu
+  * Cela peut se faire en passant une référence à `GameActivity` via le constructeur. 
+  * `GameActivity` doit exposer une méthode `void updateView(String message)`.
+  * Cette méthode `updateView` se charge alors d'ajouter le texte `message` à la `TextView` de l'historique. 
+  * Il est aussi bien de scroller : `scrollView.fullScroll(View.FOCUS_DOWN);` 
+
+* Dans la méthode `doInBackground` de notre `AsyncTask` sur laquelle se joue la partie, nous ne pouvons pas modifier l'UI (par exemple en appelant `updateView`) car nous ne nous trouvons pas sur le thread UI. Pour mettre à jour l'UI depuis la méthode `doInBackground` il faut :
+
+  * Appeler la méthode `publishProgress("mon message")`
+
+  * Surcharger la méthode :
+
+  ```java
+  @Override
+  protected void onProgressUpdate(String[] values) {
+    super.onProgressUpdate(values);
+    String message = values[0];
+    // On peut maintenant modifier l'UI pour ajouter "message" à l'historique de la partie
+    ...
+  }
+  ```
+
+* Remplacez les `Log.d(...)` par des mises à jour de l'historique dans l'UI.
+
+* Pour afficher le gagnant, on surcharge la méthode `protected void onPostExecute(String s)` de la même manière que `onProgressUpdate`. Il faut bien que `doInBackground` renvoie un message tel que "Le gagnant est ...".
+
+* Voici un example de ce que vous devez obtenir après avoir lancé la partie en cliquant sur `Commencer` :
+
+![image-app-history](tp03-app-01.png)
+
+#### c. Mettre à jour la vue du plateau de jeu
 
 
 
