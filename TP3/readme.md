@@ -142,7 +142,7 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
 
 * Maintenant nous allons ajouter la possibilité d'afficher un état du jeu où un certain nombre d'allumettes (1, 2 ou 3) sont sélectionnées par un joueur.
 
-  * Ajoutez à la classe `Allumettes` un getter/setter afin qu'un utilisateur de cette classe puisse modifier l'attribut indiquant le nombre d'allumettes sélectionnées.
+  * Ajoutez à la classe `Allumettes` une méthode afin qu'un utilisateur de cette classe puisse modifier l'attribut indiquant le nombre d'allumettes sélectionnées `void setSelectedCount(int s)`.
   * Nous représenterons le fait qu'une allumette est sélectionnée en l'entourant d'un rectangle vert épais. Ci-dessous 3 allumettes sont sélectionnées :![image-ui05](tp03-ui-05.png)
   * Pour dessiner un rectangle vert avec un trait épais, créez un `Paint` `selectedPaint` sur lequel vous réglez
     * la couleur : `selectedPaint.setColor(...)`
@@ -151,7 +151,7 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
 
 * Enfin, on affiche les allumettes enlevées de manière différente. On va les représenter par des traits pointillés : ![image-ui-final](tp03-ui-06.png)
 
-  * Ici encore il faut que la classe `Allumettes` expose des getters et setters pour changer le nombre d'allumettes visibles.
+  * Ici encore il faut que la classe `Allumettes` expose une méthode `setVisibleCount(v)` pour changer le nombre d'allumettes visibles.
   * Pour dessiner des traits pointillés, on crée un `Paint` `removedPaint` sur lequel on ajoute un effet :
 
    ```java
@@ -180,14 +180,14 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
 
 ## 3. Mise en place du jeu : le moteur de jeu, les IA et le contrôleur
 
-### Mise en place du moteur de jeu
+### 3.1. Mise en place du moteur de jeu
 
 * Récupérez les classes [`JeuDesAllumettes`](JeuDesAllumettes.java) et [`Joueur`](Joueur.java) sur le repo et parcourez les.
 * Explication : ces classes de base définissent les règles du jeu et la manière dont un joueur intéragit avec le jeu :
   * `JeuDesAllumettes` stocke l'état actuel de la partie de jeu des allumettes, et expose des méthodes pour agir sur cette partie (ajouter un joueur, faire jouer le joueur dont c'est le tour, déterminer s'il y a un gagnant, etc)
   * `Joueur` représente un joueur et comporte un méthode `jouer` qui définit le comportement du joueur lors d'un tour. Pour le moment ce joueur de base va toujours choisir 1 allumette à son tour. Dans cette partie nous allons créer différents joueurs plus intelligents, ainsi qu'une interface pour qu'un vrai joueur puisse choisir ses coups.
 
-### Compléter l'interface graphique du jeu
+### 3.2. Compléter l'interface graphique du jeu
 
 * On va modifier l'interface graphique du jeu (en modifiant le fichier `res/layout/activity_game.xml`). On ajoute 2 éléments pour permettre de
   * afficher l'historique d'une partie (un `TextView` dans un `ScrollView`)
@@ -196,7 +196,7 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
 
 ![image-ui-final](tp03-ui-07.png)
 
-### Le contrôleur
+### 3.3. Le contrôleur
 
 Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lance lorsqu'on appuie sur le bouton "Commencer" de l'application.
 
@@ -212,7 +212,7 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
 
   * La classe `Controleur` doit avoir un attribut `partie` de type `AsyncTask<Void, String, String>`. (Cette `AsyncTask` ne prend pas de paramètres donc `Void`, elle renvoie comme donnée de progression des messages `String` et comme résultat final un message `String`)
 
-  * Dans la méthode `start`, on initialise `partie`. Plusieurs options possibles : utiliser une classe anonyme `partie = new AsyncTask<Void, String, String>() { ... }`, ou définir une classe ` Partie` qui hérite de `AsyncTask<Void, String, String>`. 
+  * Dans la méthode `start`, on initialise `partie`. Plusieurs options possibles : utiliser une classe anonyme `partie = new AsyncTask<Void, String, String>() { ... }`, ou définir une classe ` Partie` qui hérite de `AsyncTask<Void, String, String>` (dans ce cas il vaut mieux que `Partie` soit une classe interne de `Controleur` pour pouvoir accéder aux attributs de celui-ci directement). 
 
   * Il faut surcharger la méthode `doInBackground` de `AsyncTask` pour définir ce qui se passe pendant la partie, voici une ébauche possible (incomplète). Il faut utiliser des méthodes de `jeu`.
 
@@ -287,9 +287,42 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
 
 #### c. Mettre à jour la vue du plateau de jeu
 
+* Pour rendre le jeu plus visuel, nous allons modifier l'aspect du plateau de jeu graphique créé dans la partie 2, la classe `Allumettes`. Le nombre d'allumettes sélectionnées à chaque tour sera indiqué par des allumettes entourées de vert, et les allumettes retirées seront affichées en pointillé. Voilà un exemple de ce qu'on va obtenir à la fin de cette section :
 
+![image-app-view](tp03-app-02.png)
 
-### Des joueurs IA plus intéressants
+* Pour afficher les allumettes sélectionnées et visibles, on peut utiliser les méthodes de `Allumettes`, `setSelectedCount(...)` et `setVisibleCount(...)`.
+  * Pour appeler ces méthodes depuis `Controleur`, soit il faut une référence vers la vue `Allumettes` passée via le constructeur, soit `GameActivity` peut exposer des méthodes pour accéder à `Allumettes` ou à ses méthodes
+* On veut appeler ces méthodes en leur passant en argument un nombre entier `int` d'allumettes à sélectionner ou rendre visibles. Il faut les appeler depuis la méthode `onProgressUpdate` de la `AsyncTask`, puisque c'est à ce moment qu'on doit mettre à jour la vue. Pour le moment `onProgressUpdate` prend en argument un message `String`, ce qui n'est pas pratique pour savoir le nombre d'allumettes choisies. De plus, on aimerait avoir 2 comportements de mise à jour différents : (1) lors du message de coup principal, on veut afficher le nombre d'allumettes sélectionnées (voir ci-dessus), (2) lors du message de coup "après le coup" on veut afficher le nombre d'allumettes visibles à cet instant là, et 0 allumettes sélectionnées (voir ci-dessous).
+
+![image-app-viewb](tp03-app-02b.png)
+
+* Au lieu de passer simplement un message `String` à `onProgressUpdate`, on va passer à cette méthode des instances d'une classe `UpdateMessage` que nous allons créer.
+
+  * Créer une classe privée interne dans la classe `Controleur` :
+
+  ```java
+  private abstract class UpdateMessage {
+    protected int nbAllumettesChoisies;
+    protected Joueur j;
+  
+    public UpdateMessage(Joueur j, int nbAllumettesChoisies) {
+      this.j = j;
+      this.nbAllumettesChoisies = nbAllumettesChoisies;
+    }
+  
+    public abstract void updateView();
+  }
+  ```
+
+  * Créer 2 classes qui héritent de `UpdateMessage` : `MainUpdateMessage` et `PostUpdateMessage`.
+  * Dans la classe `MainUpdateMessage` `updateView` effectue une mise à jour de l'UI comme montré sur la première image (on affiche le nombre d'allumettes sélectionnées, on écrit un message de type `Joueur x a choisi n allumettes`).
+  * Dans la classe `PostUpdateMessage`  `updateView` effectue une mise à jour de l'UI comme montré sur la deuxième image (on sélectionne 0 allumettes, on met à jour le nombre d'allumettes visibles, on écrit un message de type `Il reste n allumettes`).
+  * Modifiez les paramètres de type de la `AsyncTask` car maintenant les paramètres de progrès sont de type `UpdateMessage`. On a donc : `AsyncTask<Void, UpdateMessage, String>`, et `onProgressUpdate(UpdateMessage[] values)`
+  * La méthode `onProgressUpdate` peut être simplifiée et juste utiliser la méthode `updateView` de la classe `UpdateMessage`
+  * Dans `doInBackground` on ne passe plus un message `String` à `publishProgress`, mais une instance des classes `MainUpdateMessage` ou `PostUpdateMessage`, selon le cas.
+
+### 3.4. Des joueurs IA plus intéressants
 
 
 
