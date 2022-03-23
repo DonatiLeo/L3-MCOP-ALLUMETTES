@@ -196,11 +196,9 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
 
 ![image-ui-final](tp03-ui-07.png)
 
-### 3.3. Le contrôleur
+### 3.3. Lancer une partie entre 2 joueurs IA
 
 Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lance lorsqu'on appuie sur le bouton "Commencer" de l'application.
-
-#### a. Lancer une partie entre 2 joueurs IA
 
 * Créer une classe `Controleur` dans un package `fr.unice.l3.matchesgame.control`
 
@@ -227,10 +225,15 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
           Joueur j = ...;
           // Combien d'allumettes sont choisies par le joueur ?
           int nbAllumettesChoisies = ...;
+          
+          // 1er message : on affiche le coup (allumettes choisies)
           Log.d("Partie", "Le joueur : " + j.toString() + " choisit " + " " + nbAllumettesChoisies + " allumettes.");
+          
           // Marquer une pause pour laisser le temps de voir le coup
           j.attendre();
           int nbAllumettesVisibles = ...;
+          
+          // 2e message : on affiche le résultat de ce tour (allumettes restantes)
           Log.d("Partie", "Il reste " + nbAllumettesVisibles + " allumettes.");
         }
       } catch (InterruptedException e) {
@@ -246,11 +249,13 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
 
   * Dans la méthode `start`, on réinitialise la partie de jeu (en utilisant une méthode de `jeu`) puis on lance le processus défini juste avant : `partie.execute()`. La méthode pour arrêter ce processus est `partie.cancel(true)`, à vous de voir où il faut l'appeler.
 
-* Afin de tester le `Controleur` il faut modifier `GameActivity` pour que lors d'un clic sur le bouton `Commencer`, on puisse lancer une partie de jeu via le contrôleur (par exemple `controleur.start()`). Pour cela il faut aussi créer une instance de `JeuDesAllumettes`, lui assigner 2 joueurs, et créer une instance de `Controleur`.
+* Afin de tester le `Controleur` il faut modifier `GameActivity` pour que lors d'un clic sur le bouton `Commencer`, on puisse lancer une partie de jeu via le contrôleur. Pour cela il faut aussi créer une instance de `JeuDesAllumettes`, lui assigner 2 joueurs, et créer une instance de `Controleur`.
 
 * Maintenant, lors d'un clic sur le bouton `Commencer`, vous devez avoir l'historique de la partie qui s'affiche dans la console. Dans les parties suivantes on va mettre à jour l'UI de l'application en fonction de ces informations sur la partie en cours.
 
-#### b. Afficher l'historique de la partie
+### 3.4. Mettre à jour l'inteface graphique du jeu
+
+#### a. Afficher l'historique de la partie
 
 * Au lieu d'afficher les messages de progression dans la console, on souhaite mettre à jour le contenu de la `TextView` qui contient l'historique des coups de la partie sur l'UI.
 
@@ -263,7 +268,7 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
 
 * Dans la méthode `doInBackground` de notre `AsyncTask` sur laquelle se joue la partie, nous ne pouvons pas modifier l'UI (par exemple en appelant `updateView`) car nous ne nous trouvons pas sur le thread UI. Pour mettre à jour l'UI depuis la méthode `doInBackground` il faut :
 
-  * Appeler la méthode `publishProgress("mon message")`
+  * Appeler la méthode `publishProgress` en passant en argument le message ("X a choisi n allumettes").
 
   * Surcharger la méthode :
 
@@ -277,7 +282,7 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
   }
   ```
 
-* Remplacez les `Log.d(...)` par des mises à jour de l'historique dans l'UI.
+* Remplacez les 2 messages `Log.d(...)` par des mises à jour de l'historique dans l'UI.
 
 * Pour afficher le gagnant, on surcharge la méthode `protected void onPostExecute(String s)` de la même manière que `onProgressUpdate`. Il faut bien que `doInBackground` renvoie un message tel que "Le gagnant est ...".
 
@@ -285,7 +290,7 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
 
 ![image-app-history](tp03-app-01.png)
 
-#### c. Mettre à jour la vue du plateau de jeu
+#### b. Mettre à jour la vue du plateau de jeu
 
 * Pour rendre le jeu plus visuel, nous allons modifier l'aspect du plateau de jeu graphique créé dans la partie 2, la classe `Allumettes`. Le nombre d'allumettes sélectionnées à chaque tour sera indiqué par des allumettes entourées de vert, et les allumettes retirées seront affichées en pointillé. Voilà un exemple de ce qu'on va obtenir à la fin de cette section :
 
@@ -293,11 +298,11 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
 
 * Pour afficher les allumettes sélectionnées et visibles, on peut utiliser les méthodes de `Allumettes`, `setSelectedCount(...)` et `setVisibleCount(...)`.
   * Pour appeler ces méthodes depuis `Controleur`, soit il faut une référence vers la vue `Allumettes` passée via le constructeur, soit `GameActivity` peut exposer des méthodes pour accéder à `Allumettes` ou à ses méthodes
-* On veut appeler ces méthodes en leur passant en argument un nombre entier `int` d'allumettes à sélectionner ou rendre visibles. Il faut les appeler depuis la méthode `onProgressUpdate` de la `AsyncTask`, puisque c'est à ce moment qu'on doit mettre à jour la vue. Pour le moment `onProgressUpdate` prend en argument un message `String`, ce qui n'est pas pratique pour savoir le nombre d'allumettes choisies. De plus, on aimerait avoir 2 comportements de mise à jour différents : (1) lors du message de coup principal, on veut afficher le nombre d'allumettes sélectionnées (voir ci-dessus), (2) lors du message de coup "après le coup" on veut afficher le nombre d'allumettes visibles à cet instant là, et 0 allumettes sélectionnées (voir ci-dessous).
+* On aimerait avoir 2 comportements de mise à jour de la vue différents : (1) lors du message de coup principal, on veut afficher le nombre d'allumettes sélectionnées (voir ci-dessus), (2) lors du message de coup "après le coup" on veut afficher le nombre d'allumettes visibles à cet instant là, et 0 allumettes sélectionnées (voir ci-dessous).
 
 ![image-app-viewb](tp03-app-02b.png)
 
-* Au lieu de passer simplement un message `String` à `onProgressUpdate`, on va passer à cette méthode des instances d'une classe `UpdateMessage` que nous allons créer.
+* Au lieu de passer simplement un message `String` à `onProgressUpdate`, on va passer à cette méthode des instances d'une classe `UpdateMessage` que nous allons créer. Cela nous permettra d'avoir une information plus structurée sur la mise à jour à afficher, notamment le nombre d'allumettes choisies.
 
   * Créer une classe privée interne dans la classe `Controleur` :
 
@@ -322,9 +327,18 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
   * La méthode `onProgressUpdate` peut être simplifiée et juste utiliser la méthode `updateView` de la classe `UpdateMessage`
   * Dans `doInBackground` on ne passe plus un message `String` à `publishProgress`, mais une instance des classes `MainUpdateMessage` ou `PostUpdateMessage`, selon le cas.
 
-### 3.4. Des joueurs IA plus intéressants
+* Enfin, testez que lors d'un appui sur `Commencer` on a bien une partie qui se joue avec mise à jour de la vue du plateau et affichage des messages dans l'historique.
 
+### 3.5. Des joueurs IA plus intéressants
 
+Le jeu des allumettes que nous avons créé fait partie d'une classe de jeu appelés [Jeux de Nim](https://fr.wikipedia.org/wiki/Jeux_de_Nim). Ce type de jeu comporte une stratégie gagnante, c'est à dire que si on la suit et que l'on se trouve dans une position gagnante, on est sûr de l'emporter.
+
+La stratégie consiste à toujours laisser dans la partie (après son coup) un nombre d'allumettes tel que ce nombre est égal à un multiple de 4 + 1. Par exemple il faut laisser un nombre d'allumettes égal à : 1, 5, 9, 13, etc. Donc s'il reste 15 allumettes à mon tour, j'en choisis 2 pour en laisser 13.
+
+* Pour le moment votre joueur "IA" définit par la classe `Joueur` ne prend toujours que 1 allumette. On va définir 2 nouveaux types de joueurs IA qui ont des comportements différents :
+  * Le joueur `JoueurRandom` qui prend au hasard entre 1 et 3 allumettes à chaque tour.
+  * Le joueur `JoueurSmart` qui suit la stratégie gagnante du jeu. Il choisira toujours un nombre d'allumettes tel que `(nbVisibles - nbChoisies) % 4 == 1` si cela est possible, sinon il choisira 1 allumette.
+* Implémentez ces différents types de joueurs comme des classes héritant de la classe de base `Joueur` et surchargeant la méthode `jouer`. Ensuite testez les en changeant les joueurs créés dans `GameActivity`.
 
 ## 4. Interface pour un joueur humain
 
