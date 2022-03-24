@@ -185,7 +185,7 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
 * Récupérez les classes [`JeuDesAllumettes`](JeuDesAllumettes.java) et [`Joueur`](Joueur.java) sur le repo et parcourez les.
 * Explication : ces classes de base définissent les règles du jeu et la manière dont un joueur intéragit avec le jeu :
   * `JeuDesAllumettes` stocke l'état actuel de la partie de jeu des allumettes, et expose des méthodes pour agir sur cette partie (ajouter un joueur, faire jouer le joueur dont c'est le tour, déterminer s'il y a un gagnant, etc)
-  * `Joueur` représente un joueur et comporte un méthode `jouer` qui définit le comportement du joueur lors d'un tour. Pour le moment ce joueur de base va toujours choisir 1 allumette à son tour. Dans cette partie nous allons créer différents joueurs plus intelligents, ainsi qu'une interface pour qu'un vrai joueur puisse choisir ses coups.
+  * `Joueur` représente un joueur et comporte une méthode `jouer` qui définit le comportement du joueur lors d'un tour. Pour le moment ce joueur de base va toujours choisir 1 allumette à son tour.
 
 ### 3.2. Compléter l'interface graphique du jeu
 
@@ -223,7 +223,7 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
         while(...) {
           // Quel est le joueur dont c'est le tour ?
           Joueur j = ...;
-          // Combien d'allumettes sont choisies par le joueur ?
+          // Combien d'allumettes sont choisies lors de ce tour de jeu ?
           int nbAllumettesChoisies = ...;
           
           // 1er message : on affiche le coup (allumettes choisies)
@@ -231,6 +231,7 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
           
           // Marquer une pause pour laisser le temps de voir le coup
           j.attendre();
+          
           int nbAllumettesVisibles = ...;
           
           // 2e message : on affiche le résultat de ce tour (allumettes restantes)
@@ -304,7 +305,7 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
 
 * Au lieu de passer simplement un message `String` à `onProgressUpdate`, on va passer à cette méthode des instances d'une classe `UpdateMessage` que nous allons créer. Cela nous permettra d'avoir une information plus structurée sur la mise à jour à afficher, notamment le nombre d'allumettes choisies.
 
-  * Créer une classe privée interne dans la classe `Controleur` :
+  * Créer une classe abstraite privée interne dans la classe `Controleur` :
 
   ```java
   private abstract class UpdateMessage {
@@ -326,6 +327,7 @@ Dans cette section on va faire en sorte qu'une partie entre 2 joueurs IA se lanc
   * Modifiez les paramètres de type de la `AsyncTask` car maintenant les paramètres de progrès sont de type `UpdateMessage`. On a donc : `AsyncTask<Void, UpdateMessage, String>`, et `onProgressUpdate(UpdateMessage[] values)`
   * La méthode `onProgressUpdate` peut être simplifiée et juste utiliser la méthode `updateView` de la classe `UpdateMessage`
   * Dans `doInBackground` on ne passe plus un message `String` à `publishProgress`, mais une instance des classes `MainUpdateMessage` ou `PostUpdateMessage`, selon le cas.
+  * Après avoir mis à jour l'instance de `Allumettes` (par exemple en changeant le nombre d'allumettes sélectionnées), il faut appeler la méthode `invalidate()` sur cette instance pour indiquer que l'on souhaite que cette `View` soit rendue de nouveau.
 
 * Enfin, testez que lors d'un appui sur `Commencer` on a bien une partie qui se joue avec mise à jour de la vue du plateau et affichage des messages dans l'historique.
 
