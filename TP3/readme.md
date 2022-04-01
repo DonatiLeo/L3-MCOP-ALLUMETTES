@@ -426,3 +426,14 @@ On veut ajouter une manière pour un joueur humain de choisir le nombre d'allume
   ```
   
   * `InteractionTactile` doit alors avoir une référence vers `GameActivity`. Elle peut être passée via le constructeur.
+  
+* À la fin de cette partie, vous devriez avoir un jeu jouable à 1 joueur contre l'IA ! Félicitations !
+
+## 5. Bonus
+
+En bonus vous pouvez :
+
+* Implémenter une interaction via l'accéléromètre. Plutôt que de toucher la vue, le joueur va maintenant incliner le téléphone sur la droite ou sur la gauche pour diminuer ou augmenter le nombre d’allumettes sélectionnées.
+* Ajouter un menu de réglages qui permet de choisir le nom des joueurs, leur type (quelle IA), le type d'interaction (tactile ou accéléromètre)
+
+Plus d'instructions sont disponibles sur le document Word original du TP (voir moodle).
