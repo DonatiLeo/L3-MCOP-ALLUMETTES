@@ -140,14 +140,15 @@ La `View` se chargera d'agencer à l'écran des allumettes. D'abord on définit 
 
 ### 2.3. Indication de l'état des allumettes (sélectionnée et enlevée)
 
-* Maintenant nous allons ajouter la possibilité d'afficher un état du jeu où un certain nombre d'allumettes (1, 2 ou 3) sont sélectionnées par un joueur.
+* Maintenant nous allons ajouter la possibilité d'afficher un état du jeu où un certain nombre d'allumettes (1, 2 ou 3) sont sélectionnées par un joueur. Dans cet affichage on va toujours considérer qu'on sélectionne et enlève les allumettes **de droite à gauche**, comme vous pouvez le voir sur les images ci-dessous.
 
   * Ajoutez à la classe `Allumettes` une méthode afin qu'un utilisateur de cette classe puisse modifier l'attribut indiquant le nombre d'allumettes sélectionnées `void setSelectedCount(int s)`.
   * Nous représenterons le fait qu'une allumette est sélectionnée en l'entourant d'un rectangle vert épais. Ci-dessous 3 allumettes sont sélectionnées :![image-ui05](tp03-ui-05.png)
   * Pour dessiner un rectangle vert avec un trait épais, créez un `Paint` `selectedPaint` sur lequel vous réglez
-    * la couleur : `selectedPaint.setColor(...)`
+    * la couleur : `selectedPaint.setColor(Color.GREEN)`
     * l'épaisseur : `selectedPaint.setStrokeWidth(...)`
     * le style (on veut dessiner des formes non pleines avec uniquement le trait) : `selectedPaint.setStyle(Paint.Style.STROKE)`
+    * dessiner un rectangle est possible dans la méthode `onDraw` en utilisant : `canvas.drawRect(positionBordGauche, positionBordHaut, positionBordDroit, positionBordBas, selectedPaint)`
 
 * Enfin, on affiche les allumettes enlevées de manière différente. On va les représenter par des traits pointillés : ![image-ui-final](tp03-ui-06.png)
 
