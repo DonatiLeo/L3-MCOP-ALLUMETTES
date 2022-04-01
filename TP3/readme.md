@@ -337,10 +337,92 @@ Le jeu des allumettes que nous avons créé fait partie d'une classe de jeu appe
 
 La stratégie consiste à toujours laisser dans la partie (après son coup) un nombre d'allumettes tel que ce nombre est égal à un multiple de 4 + 1. Par exemple il faut laisser un nombre d'allumettes égal à : 1, 5, 9, 13, etc. Donc s'il reste 15 allumettes à mon tour, j'en choisis 2 pour en laisser 13.
 
-* Pour le moment votre joueur "IA" définit par la classe `Joueur` ne prend toujours que 1 allumette. On va définir 2 nouveaux types de joueurs IA qui ont des comportements différents :
+* Pour le moment votre joueur "IA" défini par la classe `Joueur` ne prend toujours que 1 allumette. On va définir 2 nouveaux types de joueurs IA qui ont des comportements différents :
   * Le joueur `JoueurRandom` qui prend au hasard entre 1 et 3 allumettes à chaque tour.
   * Le joueur `JoueurSmart` qui suit la stratégie gagnante du jeu. Il choisira toujours un nombre d'allumettes tel que `(nbVisibles - nbChoisies) % 4 == 1` si cela est possible, sinon il choisira 1 allumette.
 * Implémentez ces différents types de joueurs comme des classes héritant de la classe de base `Joueur` et surchargeant la méthode `jouer`. Ensuite testez les en changeant les joueurs créés dans `GameActivity`.
 
 ## 4. Interface pour un joueur humain
 
+On veut ajouter une manière pour un joueur humain de choisir le nombre d'allumettes qu'il ou elle veut choisir lors de son coup. On va commencer par faire une interface tactile : le joueur va cliquer sur la `View` `Allumettes` pour changer le nombre d'allumettes sélectionnées, puis il ou elle va cliquer sur un bouton `Valider` pour confirmer son choix.
+
+* Ajouter un bouton `Valider` dans l'interface de votre application, par exemple comme ceci :
+
+![image-app-viewb](tp03-app-03.png)
+
+* On va avoir un `JoueurHumain` qui utilise une `InteractionTactile` pour attendre et connaître le coup choisi par l'utilisateur.
+
+  * Créez une classe `JoueurHumain` qui hérite de `Joueur`.
+  * Cette classe a un attribut `interaction` de type `InteractionTactile` qui est une classe qu'il vous faut créer aussi.
+
+* On commence par compléter la classe `InteractionTactile`. Ses attributs et méthodes :
+
+  * un attribut `synchro` de type `Object`. Cet objet servira à synchroniser les actions de cette classe (attente d'une entrée utilisateur, puis validation du coup) avec le processus principal de l'application.
+
+  * un attribut de type `int` qui sert à stocker le nombre d'allumettes sélectionnées par le joueur lors de ce coup
+
+  * un attribut `active` de type `boolean` qui indique si l'interface tactile est "activée" (elle l'est seulement lorsqu'on appelle la méthode `startTurn`). Lorsque l'interface est activée, on incrémentera le nombre d'allumettes sélectionnées lorsque le joueur clique sur l'écran, sinon on ne fait rien.
+
+  * une méthode `public Object startTurn()`  qui indique qu'on démarre le "tour" de jeu de l'utilisateur. On renvoie l'objet `synchro` qui servira sur le thread principal à "attendre" l'événement de fin du tour.
+
+  * une méthode `public int endTurn()` qui renvoie le nombre d'allumettes sélectionnées et met `active` à `False`
+
+  * cette classe hérite de `View.OnClickListener`. La méthode `onClick` doit supporter 2 comportements :
+
+    * si le clic est sur la `view` `Allumettes`, alors on incrémente le nombre d'allumettes sélectionnées (ce nombre doit varier entre 1 et 3, vous pouvez utiliser l'opérateur `%`)
+
+    * si le clic est sur le bouton `Valider`, alors on "notifie" l'objet `synchro` de la fin du tour :
+
+     ```java
+     // Si le bouton Valider est cliqué
+     if (...) {
+        synchronized (synchro) {
+          synchro.notify();
+        }
+     }
+     ```
+
+* Ensuite on complète la classe `JoueurHumain` :
+
+  * il faut un constructeur qui prend en argument un objet `InteractionTactile`
+  * la méthode `jouer` fait appel à l'attribut `interaction` pour lancer le thread "d'attente" du coup humain, puis elle attend `synchro.wait()` que le coup soit validé :
+  
+   ```java
+    @Override
+    public int jouer(int nbAllumettesVisibles) throws InterruptedException {
+      int nbSelected = 1;
+      Object synchro = interaction.startTurn();
+      synchronized (synchro) {
+        synchro.wait();
+        nbSelected = interaction.endTurn();
+      }
+      return nbSelected;
+    }
+   ```
+  
+  * la méthode `attendre` est vide puisqu'il n'y a pas besoin de mettre une attente artificielle pour le joueur humain
+  
+* Il faut instancier `InteractionTactile` dans `GameActivity` pour pouvoir créer un `JoueurHumain`. Il faut ajouter cette instance de `InteractionTactile` comme `onClickListener` sur le bouton `Valider` et sur la vue `Allumettes`.
+
+* Testez votre jeu en regardant si vous pouvez bien choisir différents nombres d'allumettes et jouer une partie. Pour faciliter le test vous pouvez utiliser des `Log.d(...)` pour afficher le nombre d'allumettes choisies.
+
+* Enfin, on veut pouvoir mettre à jour la `View` `Allumettes` lors du clic de l'utilisateur, pour que le nombre d'allumettes affichées comme sélectionnées soit cohérent (comme sur l'image ci-dessus où 2 allumettes sont sélectionnées).
+
+  * Il faut pouvoir appeler la méthode `setSelectedCount(...)` de `gameView` (attribut de `GameActivity`). Par exemple vous pouvez créer une méthode `public void updateGameView(int nbSelected)` dans `GameActivity`
+
+  * Pour pouvoir mettre à jour l'UI depuis un thread autre que le thread UI, il faut utiliser un `Runnable`:
+
+  ```java
+  // Dans GameActivity
+  public void updateGameView(int nbSelected) {
+    runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          this.gameView.setSelectedCount(nbSelected);
+          this.gameView.invalidate();
+        }
+    });
+  }
+  ```
+  
+  * `InteractionTactile` doit alors avoir une référence vers `GameActivity`. Elle peut être passée via le constructeur.
