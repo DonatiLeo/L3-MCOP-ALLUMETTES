@@ -1,6 +1,6 @@
-# TP03 - Jeux des Allumettes
+# Jeux des Allumettes
 
-Dans ce TP vous allez apprendre à faire une `View`, et à faire une synchronisation entre plusieurs `Thread` dans une application Android.
+Dans ce Projet vous allez apprendre à faire une `View`, et à faire une synchronisation entre plusieurs `Thread` dans une application Android.
 
 ## Le jeu
 
